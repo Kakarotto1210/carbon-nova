@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgroFlux AI | Farm Intelligence Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6f2;color:#203328}
+header{background:#173f2c;color:white;padding:28px 6%}
+header h1{margin:0;font-size:30px}
+header p{color:#d6e7d9;margin-bottom:0}
+main{max-width:1200px;margin:26px auto;padding:0 18px}
+h2{font-size:20px;margin-top:30px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.card,.panel{background:white;border:1px solid #e0e8df;border-radius:12px;padding:20px}
+.label{font-size:13px;color:#66766b}
+.value{font-size:27px;font-weight:bold;margin:10px 0}
+.note{font-size:13px;color:#66766b;line-height:1.5}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.panel img{width:100%;height:auto;border-radius:7px;margin-top:12px}
+.warning{background:#fff4d9;border:1px solid #eed9a1;padding:16px;border-radius:10px;line-height:1.6}
+footer{text-align:center;padding:25px;color:#66766b;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌱 AgroFlux AI</h1>
+  <p>Agricultural intelligence: satellite vegetation analysis, fertilizer emissions and ML yield estimation</p>
+</header>
+<main>
+  <h2>Project Overview</h2>
+  <section class="cards">
+    <div class="card"><div class="label">Valid satellite pixels</div><div class="value">33,473</div><div class="note">Pixels included in NDVI analysis</div></div>
+    <div class="card"><div class="label">Mean NDVI</div><div class="value">0.3667</div><div class="note">Scene-level vegetation index</div></div>
+    <div class="card"><div class="label">Fertilizer records estimated</div><div class="value">1,396 / 1,658</div><div class="note">262 records were not calculated</div></div>
+    <div class="card"><div class="label">ML yield estimate</div><div class="value">5,605.75 kg/ha</div><div class="note">Baseline model output; not validated</div></div>
+  </section>
+
+  <h2>Satellite & Vegetation Analysis</h2>
+  <section class="charts">
+    <div class="panel"><b>Vegetation Zones</b><img src="outputs/vegetation_zones.png" alt="Vegetation classification map"></div>
+    <div class="panel"><b>Vegetation Distribution</b><img src="outputs/vegetation_percentage.png" alt="Vegetation percentage graph"></div>
+  </section>
+
+  <h2>Fertilizer Emissions Analysis</h2>
+  <section class="charts">
+    <div class="panel"><b>Estimated Emissions by Fertilizer Type</b><img src="outputs/fertilizer_emissions_by_type.png" alt="Fertilizer emissions graph"></div>
+    <div class="panel"><b>Carbon Emissions by Source</b><img src="outputs/carbon_emissions_by_source.png" alt="Carbon engine source graph"></div>
+    <div class="panel"><b>India Emissions Trend</b><img src="outputs/india_emissions_trends.png" alt="India emissions trend"></div>
+  </section>
+
+  <h2>Limitations & Responsible Use</h2>
+  <div class="warning">
+    <b>Carbon engine:</b> Diesel and electricity activity data were not found. Complete farm emissions totals are unavailable; do not interpret this as zero emissions.<br><br>
+    <b>Fertilizer estimates:</b> Default emission factors are used for supported products. These are partial estimates, not a complete life-cycle assessment.<br><br>
+    <b>ML model:</b> The training sample and prediction quality are not fully validated. The displayed yield is a model estimate, not a guaranteed or measured yield.<br><br>
+    <b>Satellite analysis:</b> NDVI zones are screening categories, not a diagnosis of crop health or nutrient deficiency.
+  </div>
+</main>
+<footer>AgroFlux AI · Academic prototype · Results depend on input data and model limitations</footer>
+</body>
+</html>

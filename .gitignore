@@ -1,0 +1,57 @@
+
+# Python environment and cache
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Raw survey data
+data/*.csv
+data/*.xlsx
+data/*.xls
+
+# Downloaded raw satellite imagery
+data/copernicus_extracted/
+
+# Intermediate and row-level results
+outputs/rice_cleaned.csv
+outputs/fertilizer_cleaned.csv
+outputs/fertilizer_rate_review.csv
+outputs/carbon_emissions_results.csv
+
+# Backups and temporary files
+*backup*/
+*.bak
+
+
+# Raw source datasets: never publish
+/*.xlsx
+/*.xls
+/*.csv
+
+# Local data and real prediction inputs
+/data/*
+!/data/prediction_input.example.json
+
+# Publish only selected output artifacts
+/outputs/*
+!/outputs/nawada_ndvi.tif
+!/outputs/vegetation_zones.png
+!/outputs/vegetation_percentage.png
+!/outputs/carbon_emissions_summary.json
+!/outputs/fertilizer_emissions_summary.csv
+!/outputs/fertilizer_emissions_by_type.png
+!/outputs/india_emissions_trends.png
+!/outputs/carbon_emissions_by_source.png
+
+# Publish only the model used by the dashboard
+/models/*
+!/models/rice_yield_model.joblib
+
+# Local backups
+/app_backup.py

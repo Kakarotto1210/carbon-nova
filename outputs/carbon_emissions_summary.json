@@ -1,0 +1,26 @@
+{
+  "records_processed": 45643,
+  "input_columns": 136,
+  "nitrogen_column_found": "Total_N",
+  "diesel_column_found": null,
+  "electricity_column_found": null,
+  "records_with_nitrogen": 45643,
+  "records_with_diesel": 0,
+  "records_with_electricity": 0,
+  "records_with_complete_totals": 0,
+  "records_with_incomplete_totals": 45643,
+  "emission_factors": {
+    "rice_n2o_factor": 0.004,
+    "n2o_to_n2o_ratio": 1.5714285714285714,
+    "n2o_gwp100": 273,
+    "diesel_kg_co2_per_litre": 2.68,
+    "electricity_kg_co2_per_kwh": 0.7117
+  },
+  "limitations": [
+    "Verify Total_N units before interpreting fertilizer estimates.",
+    "Verify that the rice-specific factor applies to these records.",
+    "Diesel and electricity require actual activity measurements.",
+    "Missing sources are not treated as zero.",
+    "The fertilizer estimate covers direct soil N2O only."
+  ]
+}

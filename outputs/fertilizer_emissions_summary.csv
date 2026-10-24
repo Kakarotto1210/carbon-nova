@@ -1,0 +1,3 @@
+Chem_fert_nm_kh,records_calculated,fertilizer_quantity_kg,nitrogen_kg_estimated,direct_n2o_kg_co2e_estimated,urea_application_co2_kg_estimated,fertilizer_emissions_kg_co2e_estimated
+DAP,641,125169.0,22530.420000000006,96655.50180000043,0.0,96655.50180000043
+Urea,755,279648.45,128638.28700000014,551858.2512300014,205075.53000000003,756933.7812300029

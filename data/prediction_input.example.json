@@ -1,0 +1,14 @@
+{
+  "state": "Bihar",
+  "plot_area_acres": 1.0,
+  "plot_area_hectares": 0.40468564224,
+  "urea_kg_per_plot": 40.0,
+  "dap_kg_per_plot": 20.0,
+  "urea_kg_per_ha": 98.84,
+  "dap_kg_per_ha": 49.42,
+  "urea_dap_product_kg_per_ha": 148.26,
+  "latitude": 25.0,
+  "longitude": 85.0,
+  "gps_accuracy_m": 10.0,
+  "fertilizer_rate_status": "complete_urea_dap_only"
+}
