@@ -1,4 +1,4 @@
-# AgroFlux AI — Satellite Engine + ML Engine
+# Carbon Nova AI — Satellite Engine + ML Engine
 
 This package contains **only** the two engines requested. No frontend, Flask API, or database.
 
