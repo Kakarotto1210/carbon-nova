@@ -9,12 +9,19 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from features.state_coverage import render_state_coverage
+from features.satellite_analysis import render_satellite_analysis
+from features.yield_prediction import render_yield_prediction
+from features.carbon_simulator import render_carbon_simulator
+
+
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / "outputs"
 DATA_DIR = BASE_DIR / "data"
 MODEL_DIR = BASE_DIR / "models"
 
-st.set_page_config(page_title="AgroFlux AI", page_icon="🌱", layout="wide")
+
+st.set_page_config(page_title="Carbon Nova AI | Agriculture Intelligence", page_icon="🌿", layout="wide")
 
 
 def require_password():
@@ -46,28 +53,107 @@ def require_password():
 
 require_password()
 
+
 st.markdown("""
 <style>
-.stApp { background: linear-gradient(135deg, #07110d 0%, #0b1d15 55%, #10291c 100%); color: #e6f4ea; }
-.block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 1450px; }
-h1, h2, h3 { color: #e6f4ea !important; letter-spacing: -0.5px; }
-h1 { font-size: 2.5rem !important; }
-[data-testid="stMetric"] { background: linear-gradient(145deg, #11291d, #0b1c14); padding: 20px; border-radius: 16px; border: 1px solid #24583a; box-shadow: 0 0 18px rgba(46, 204, 113, 0.09); }
-[data-testid="stMetricLabel"] { color: #a8c9b3 !important; }
-[data-testid="stMetricValue"] { color: #55ed9b !important; font-weight: 700; }
-[data-testid="stSidebar"] { background: #08150f; border-right: 1px solid #1e4930; }
-[data-testid="stSidebar"] * { color: #e0f0e5; }
-.stTextInput input, .stNumberInput input { background-color: #10251a; color: #e6f4ea; border: 1px solid #326746; border-radius: 9px; }
-.stButton > button { background: linear-gradient(90deg, #147a45, #20b765); color: white; border: 1px solid #38d982; border-radius: 10px; padding: 0.55rem 1.2rem; font-weight: 700; }
-.stButton > button:hover { background: #26c971; color: #06140b; border-color: #55ed9b; }
-[data-testid="stDataFrame"] { border: 1px solid #24583a; border-radius: 12px; overflow: hidden; }
-hr { border-color: #244a33; }
-[data-testid="stImage"] img { border-radius: 12px; border: 1px solid #244a33; }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+:root { --cn-bg:#07130e; --cn-panel:#10251a; --cn-border:rgba(144,202,164,.20); --cn-text:#edf8f0; --cn-muted:#a8c6b2; --cn-accent:#75efaa; }
+html { scroll-behavior:smooth; }
+.stApp {
+ background:radial-gradient(ellipse at 8% 0%,rgba(30,132,77,.25),transparent 34%),radial-gradient(ellipse at 95% 12%,rgba(40,112,75,.18),transparent 30%),linear-gradient(145deg,#07130e 0%,#0a1a12 48%,#08140e 100%);
+ color:var(--cn-text);font-family:'DM Sans',sans-serif;
+}
+.block-container { max-width:1500px;padding-top:1.2rem;padding-bottom:4rem; }
+h1,h2,h3 { color:var(--cn-text)!important;font-family:'Manrope',sans-serif!important;letter-spacing:-.55px; }
+h1 { font-size:2.25rem!important;font-weight:800!important; } h2 { font-weight:800!important; } h3 { font-weight:750!important; }
+p,label,.stMarkdown { color:#d6e7db; } [data-testid="stCaptionContainer"] p { color:var(--cn-muted)!important; }
+[data-testid="stMetric"] {
+ background:linear-gradient(145deg,rgba(23,54,37,.96),rgba(12,31,21,.96));border:1px solid var(--cn-border);
+ border-radius:22px;padding:19px 21px;box-shadow:0 12px 30px rgba(0,0,0,.16);
+ transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+[data-testid="stMetric"]:hover { transform:translateY(-3px);border-color:rgba(117,239,170,.55);box-shadow:0 16px 35px rgba(0,0,0,.22); }
+[data-testid="stMetricLabel"] { color:#b5d1bf!important;font-weight:600; }
+[data-testid="stMetricValue"] { color:var(--cn-accent)!important;font-weight:800!important; }
+[data-testid="stSidebar"] { background:linear-gradient(180deg,#081710,#0e2418);border-right:1px solid var(--cn-border); }
+[data-testid="stSidebar"] * { color:var(--cn-text); }
+[data-testid="stSidebar"] a { color:#b6f6ce!important;text-decoration:none!important;font-weight:600; }
+[data-testid="stSidebar"] a:hover { color:#fff!important; }
+.stTextInput input,.stNumberInput input,.stTextArea textarea { background:#10251a;color:var(--cn-text);border:1px solid #315b42;border-radius:12px; }
+.stButton>button,.stDownloadButton>button,[data-testid="stFormSubmitButton"] button {
+ background:linear-gradient(135deg,#16804a,#20ad65);color:white;border:1px solid #3cbd7a;border-radius:12px;
+ padding:.68rem 1.1rem;font-weight:750;transition:all .18s ease;
+}
+.stButton>button:hover,.stDownloadButton>button:hover,[data-testid="stFormSubmitButton"] button:hover {
+ background:linear-gradient(135deg,#28b96c,#43d987);color:#06140c;border-color:#8cf4b5;transform:translateY(-2px);box-shadow:0 8px 22px rgba(32,173,101,.18);
+}
+[data-testid="stDataFrame"],[data-testid="stTable"] { border:1px solid var(--cn-border);border-radius:14px;overflow:hidden; }
+[data-testid="stImage"] img { border-radius:22px;border:1px solid var(--cn-border);transition:transform .2s ease; }
+[data-testid="stImage"] img:hover { transform:scale(1.01); }
+[data-testid="stAlert"] { border-radius:20px;border:1px solid rgba(104,220,157,.28);box-shadow:0 8px 24px rgba(0,0,0,.12); }
+div[data-testid="stProgressBar"]>div>div,.stProgress>div>div { background:linear-gradient(90deg,#20ad65,#8af4b6); }
+hr { border-color:rgba(137,207,160,.18);margin:1.8rem 0; }
+div[data-testid="stForm"] { background:linear-gradient(145deg,rgba(20,49,34,.88),rgba(9,27,18,.92));border:1px solid rgba(117,239,170,.24);border-radius:24px;padding:22px;box-shadow:0 12px 30px rgba(0,0,0,.13); }
+/* Rounded panels around Streamlit bordered containers and data areas */
+div[data-testid="stVerticalBlockBorderWrapper"] { background:linear-gradient(145deg,rgba(20,48,33,.76),rgba(9,25,17,.88));border:1px solid rgba(128,211,157,.25);border-radius:22px;padding:8px 10px;box-shadow:0 12px 28px rgba(0,0,0,.13);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease; }
+div[data-testid="stVerticalBlockBorderWrapper"]:hover { border-color:rgba(117,239,170,.5);box-shadow:0 16px 34px rgba(0,0,0,.2); }
+[data-testid="stDataFrame"], [data-testid="stTable"] { background:rgba(13,34,23,.72);border:1px solid rgba(117,239,170,.22);border-radius:20px;overflow:hidden;padding:5px; }
+[data-testid="stTabs"] [role="tablist"] { gap:8px;background:rgba(7,23,15,.65);padding:7px;border:1px solid var(--cn-border);border-radius:18px; }
+[data-testid="stTabs"] button[role="tab"] { border-radius:13px;padding:8px 16px; }
+[data-testid="stTabs"] button[aria-selected="true"] { background:linear-gradient(135deg,#176b40,#23975a); }
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] a { display:block;background:linear-gradient(135deg,rgba(25,67,45,.92),rgba(12,38,25,.95));border:1px solid rgba(117,239,170,.19);border-radius:15px;padding:11px 13px;margin:8px 0;box-shadow:0 5px 14px rgba(0,0,0,.12);transition:all .18s ease; }
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] a:hover { background:linear-gradient(135deg,#1b7748,#164b31);border-color:rgba(117,239,170,.6);transform:translateX(3px); }
+[data-testid="stSidebar"] h3 { padding:12px 13px;background:rgba(117,239,170,.07);border:1px solid rgba(117,239,170,.14);border-radius:16px; }
+.cn-hero {
+ position:relative;overflow:hidden;padding:34px 36px;border-radius:30px;margin:0 0 26px 0;
+ background:linear-gradient(115deg,rgba(17,75,45,.98),rgba(16,48,32,.98) 58%,rgba(25,95,58,.95));
+ border:1px solid rgba(143,241,179,.28);box-shadow:0 20px 55px rgba(0,0,0,.22);
+}
+.cn-hero:after { content:"🌿";position:absolute;right:35px;top:5px;font-size:100px;opacity:.13;transform:rotate(-14deg); }
+.cn-eyebrow { color:#a7f4c2;font-size:.76rem;font-weight:800;letter-spacing:2px; }
+.cn-title { color:#f3fff6;font-family:Manrope,sans-serif;font-size:2.25rem;font-weight:800;line-height:1.15;margin:9px 0; }
+.cn-subtitle { color:#d0efdc;font-size:1rem;max-width:750px;line-height:1.6; }
+.cn-chip { display:inline-block;margin-top:16px;margin-right:7px;padding:6px 11px;border-radius:99px;background:rgba(7,28,17,.38);border:1px solid rgba(173,255,201,.25);color:#dfffea;font-size:.78rem;font-weight:700; }
+/* Dedicated action-plan cards: stronger hierarchy, rounded corners, accent rail */
+.cn-action-card { display:flex;gap:18px;align-items:flex-start;margin:14px 0;padding:21px 23px;border-radius:22px;background:linear-gradient(120deg,rgba(19,58,38,.96),rgba(10,31,21,.98));border:1px solid rgba(124,221,157,.28);border-left:5px solid #42cf82;box-shadow:0 12px 28px rgba(0,0,0,.19);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+.cn-action-card:hover { transform:translateY(-2px);border-color:rgba(117,239,170,.65);box-shadow:0 16px 32px rgba(0,0,0,.24); }
+.cn-action-number { flex:0 0 48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:15px;background:linear-gradient(145deg,#1e9b5c,#145c39);border:1px solid rgba(159,255,193,.34);color:#f2fff6;font-size:1rem;font-weight:800; }
+.cn-action-title { color:#9ff4bd;font-size:.78rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;margin:1px 0 8px; }
+.cn-action-copy { color:#e4f5e9;font-size:1rem;line-height:1.65;margin:0; }
+.cn-section-intro { color:#a9cbb5;font-size:.94rem;margin-top:-8px;margin-bottom:18px; }
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] a { scroll-margin-top:20px; }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🌱 AgroFlux AI")
-st.caption("Agricultural yield, fertilizer and vegetation intelligence prototype")
+st.markdown("""
+<div class="cn-hero">
+  <div class="cn-eyebrow">AGRICULTURE • CLIMATE INTELLIGENCE</div>
+  <div class="cn-title">Carbon Nova AI</div>
+  <div class="cn-subtitle">A smarter view of vegetation, farm emissions and crop-yield insights — bringing your agricultural analytics into one workspace.</div>
+  <span class="cn-chip">🛰️ Satellite insights</span>
+  <span class="cn-chip">🌾 Fertilizer analysis</span>
+  <span class="cn-chip">♻️ Carbon estimates</span>
+  <span class="cn-chip">🤖 ML predictions</span>
+</div>
+""", unsafe_allow_html=True)
+
+with st.sidebar:
+    st.markdown("## 🌿 Carbon Nova")
+    st.caption("AGRICULTURE INTELLIGENCE")
+    st.markdown("---")
+    st.markdown("### Quick navigation")
+    st.caption("Jump to a workspace")
+    st.markdown("[🛰️ Satellite vegetation](#cn-satellite)")
+    st.markdown("[🌾 Fertilizer emissions](#cn-fertilizer)")
+    st.markdown("[🏭 Farm carbon emissions](#cn-carbon)")
+    st.markdown("[🧮 Scenario calculator](#cn-scenario)")
+    st.markdown("[🇮🇳 India emissions trend](#cn-india-trend)")
+    st.markdown("[🤖 Yield prediction](#cn-yield)")
+    st.markdown("[🌱 Farm action plan](#cn-action-plan)")
+    st.markdown("---")
+    st.markdown("**Workspace status**")
+    st.caption("Dashboard connected to local project files.")
+    st.caption("Explore each section using quick navigation.")
 
 
 def read_json(path):
@@ -85,47 +171,16 @@ def read_json(path):
 # Carbon summary is optional. Its absence should never break the dashboard.
 summary = read_json(OUTPUT_DIR / "carbon_emissions_summary.json")
 
-# 1. Satellite vegetation analysis
-st.header("🛰️ Satellite Vegetation Analysis — Nawada AOI")
-ndvi_path = OUTPUT_DIR / "nawada_ndvi.tif"
-if ndvi_path.exists():
-    try:
-        import numpy as np
-        import rasterio
+# 1. State-wise dataset coverage (calculated from the rice dataset)
+render_state_coverage(BASE_DIR)
+st.divider()
 
-        with rasterio.open(ndvi_path) as src:
-            ndvi = src.read(1, masked=True)
-            valid = ndvi.compressed()
-            valid = valid[np.isfinite(valid)]
-
-        if len(valid):
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Valid pixels", f"{len(valid):,}")
-            c2.metric("Mean NDVI", f"{float(np.mean(valid)):.4f}")
-            c3.metric("Pixels below 0.30", f"{float(np.mean(valid < 0.30) * 100):.2f}%")
-            st.caption("NDVI below 0.30 is a rough screening threshold, not a diagnosis. This raster covers the approximate Nawada area of interest (AOI); it has not yet been clipped to the exact district boundary.")
-        else:
-            st.warning("No valid NDVI pixels found.")
-    except Exception as error:
-        st.warning(f"Could not read NDVI raster: {error}")
-else:
-    st.info("NDVI raster not found. Run the satellite analysis first.")
-
-col1, col2 = st.columns(2)
-for container, filename, caption in [
-    (col1, "vegetation_zones.png", "Nawada AOI Vegetation Zones"),
-    (col2, "vegetation_percentage.png", "Nawada AOI Vegetation Distribution"),
-]:
-    with container:
-        image_path = OUTPUT_DIR / filename
-        if image_path.exists():
-            st.image(str(image_path), caption=caption, width="stretch")
-        else:
-            st.caption(f"{filename} not found.")
-
+# 2. Satellite vegetation analysis (separate module)
+render_satellite_analysis(OUTPUT_DIR)
 st.divider()
 
 # 2. Fertilizer emission estimates
+st.markdown('<div id="cn-fertilizer"></div>', unsafe_allow_html=True)
 st.header("🌾 Fertilizer Emissions")
 fertilizer_path = OUTPUT_DIR / "fertilizer_emissions_summary.csv"
 if fertilizer_path.exists():
@@ -147,6 +202,7 @@ if image_path.exists():
 st.divider()
 
 # 3. Carbon emissions: show detailed/partial rows if available
+st.markdown('<div id="cn-carbon"></div>', unsafe_allow_html=True)
 st.header("🏭 Farm Carbon Emissions")
 carbon_results_path = OUTPUT_DIR / "carbon_emissions_results.csv"
 
@@ -197,92 +253,12 @@ image_path = OUTPUT_DIR / "carbon_emissions_by_source.png"
 if image_path.exists():
     st.image(str(image_path), caption="Carbon engine outputs — interpret as partial estimates where sources are missing", width="stretch")
 
-# 4.5 Manual farm-emissions scenario calculator
-st.subheader("🧮 Farm Emissions Scenario Calculator")
-st.caption(
-    "The survey files do not contain verified diesel-litre and electricity-kWh quantities. "
-    "Enter activity data for one farm below to calculate a separate scenario estimate; "
-    "these values are not pulled from the survey dataset."
-)
-
-with st.form("farm_emissions_scenario_form"):
-    st.write("Enter total seasonal activity for one farm. If a source was genuinely unused, enter 0; leave nothing blank.")
-    f1, f2 = st.columns(2)
-    with f1:
-        scenario_area_ha_text = st.text_input("Farm area (hectares)", placeholder="e.g. 1.2")
-        scenario_urea_kg_text = st.text_input("Urea used (kg)", placeholder="e.g. 80")
-        scenario_dap_kg_text = st.text_input("DAP used (kg)", placeholder="e.g. 25")
-    with f2:
-        scenario_diesel_l_text = st.text_input("Diesel consumed (litres)", placeholder="e.g. 35")
-        scenario_electricity_kwh_text = st.text_input("Grid electricity consumed (kWh)", placeholder="e.g. 120")
-        st.caption("Factors used: diesel 2.68 kg CO₂/L; Indian grid electricity 0.710 kg CO₂/kWh (CEA FY 2024–25).")
-    calculate_scenario = st.form_submit_button("Calculate Scenario Estimate")
-
-if calculate_scenario:
-    raw_inputs = {
-        "farm area (hectares)": scenario_area_ha_text,
-        "urea (kg)": scenario_urea_kg_text,
-        "DAP (kg)": scenario_dap_kg_text,
-        "diesel (litres)": scenario_diesel_l_text,
-        "electricity (kWh)": scenario_electricity_kwh_text,
-    }
-    parsed = {}
-    bad_inputs = []
-    for label, raw in raw_inputs.items():
-        try:
-            value = float(raw)
-            if not math.isfinite(value) or value < 0:
-                bad_inputs.append(label)
-            else:
-                parsed[label] = value
-        except (TypeError, ValueError):
-            bad_inputs.append(label)
-
-    if bad_inputs:
-        st.error("Enter a valid non-negative number for: " + ", ".join(bad_inputs) + ". Unknown usage must not be entered as zero.")
-    elif parsed["farm area (hectares)"] <= 0:
-        st.error("Farm area must be greater than zero.")
-    else:
-        # Illustrative screening factors. Urea assumes 46% N; DAP assumes 18% N.
-        # Direct N2O-N factor = 0.01 kg N2O-N per kg N; GWP100 N2O = 273.
-        urea_kg = parsed["urea (kg)"]
-        dap_kg = parsed["DAP (kg)"]
-        diesel_l = parsed["diesel (litres)"]
-        electricity_kwh = parsed["electricity (kWh)"]
-        area_ha = parsed["farm area (hectares)"]
-
-        urea_application_co2 = urea_kg * (0.20 * 44.0 / 12.0)
-        nitrogen_kg = urea_kg * 0.46 + dap_kg * 0.18
-        direct_n2o_co2e = nitrogen_kg * 0.01 * (44.0 / 28.0) * 273.0
-        diesel_co2 = diesel_l * 2.68
-        electricity_co2 = electricity_kwh * 0.710
-        total_kg_co2e = urea_application_co2 + direct_n2o_co2e + diesel_co2 + electricity_co2
-
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Scenario emissions", f"{total_kg_co2e:,.1f} kg CO₂e")
-        c2.metric("Per hectare", f"{total_kg_co2e / area_ha:,.1f} kg CO₂e/ha")
-        c3.metric("Nitrogen applied", f"{nitrogen_kg:,.1f} kg N")
-
-        components = pd.DataFrame([
-            {"Source": "Urea application CO₂", "Estimated emissions (kg CO₂e)": urea_application_co2},
-            {"Source": "Direct soil N₂O from Urea + DAP nitrogen", "Estimated emissions (kg CO₂e)": direct_n2o_co2e},
-            {"Source": "Diesel combustion", "Estimated emissions (kg CO₂e)": diesel_co2},
-            {"Source": "Grid electricity", "Estimated emissions (kg CO₂e)": electricity_co2},
-        ])
-        st.dataframe(components, width="stretch", hide_index=True)
-        st.warning(
-            "This is a manual-input screening estimate, not a dataset-observed farm total. "
-            "It covers only urea application CO₂, direct soil N₂O from Urea/DAP nitrogen, diesel combustion, "
-            "and grid electricity. It excludes rice-paddy methane, fertilizer manufacture, other fertilizers, "
-            "indirect N₂O and other farm activities; therefore it is not a complete lifecycle carbon footprint."
-        )
-        st.caption(
-            "Emission-factor references: CEA, CO₂ Baseline Database for the Indian Power Sector, Version 21.0 (FY 2024–25 grid average: 0.710 tCO₂/MWh): "
-            "https://cea.nic.in/wp-content/uploads/baseline/2025/12/User_Guide_V_21.0.pdf ; "
-            "diesel direct CO₂ factor approximation: 2.68 kg CO₂/L as referenced in Indian government documentation."
-        )
+# Carbon reduction simulator (separate module)
+render_carbon_simulator()
+st.divider()
 
 # National trend chart
+st.markdown('<div id="cn-india-trend"></div>', unsafe_allow_html=True)
 st.header("🇮🇳 India Agricultural Emissions Trend")
 image_path = OUTPUT_DIR / "india_emissions_trends.png"
 if image_path.exists():
@@ -292,56 +268,226 @@ else:
 
 st.divider()
 
-# 4. Yield prediction
-st.header("🤖 ML Yield Prediction")
-st.caption("Runs the saved model with a synthetic demo input. This is not a real farmer record.")
-
-model_candidates = [MODEL_DIR / "rice_yield_model.joblib", MODEL_DIR / "yield_model.joblib"]
-model_path = next((path for path in model_candidates if path.exists()), None)
-input_path = DATA_DIR / "prediction_input.example.json"
-
-if model_path is None:
-    st.error("Yield model not found. Expected models/rice_yield_model.joblib. Train the model first.")
-elif not input_path.exists():
-    st.error("Synthetic demo input not found: data/prediction_input.example.json")
-else:
-    st.caption(f"Model file: {model_path.name}")
-    st.caption(f"Input file: {input_path.name}")
-    if st.button("Run Yield Prediction", key="run_yield_prediction"):
-        try:
-            # Call the same function as the CLI. This avoids subprocess path/stdout issues.
-            from ml_engine.predict import predict_records
-
-            with st.spinner("Running yield prediction..."):
-                prediction = predict_records(model_path, input_path)
-
-            results = prediction.get("results", [])
-            if not results:
-                st.warning("Prediction ran but returned no results.")
-            else:
-                for item in results:
-                    value = item.get("prediction")
-                    if isinstance(value, (int, float)) and "yield" in prediction.get("target", "").lower():
-                        st.metric(f"Predicted yield — row {item.get('row', 0)}", f"{value:.2f} tonnes/hectare")
-                    else:
-                        st.metric(f"Prediction — row {item.get('row', 0)}", str(value))
-
-                metrics = prediction.get("metrics", {})
-                if metrics:
-                    st.subheader("Model test metrics")
-                    metric_cols = st.columns(min(3, len(metrics)))
-                    for column, (name, value) in zip(metric_cols, metrics.items()):
-                        if isinstance(value, (int, float)):
-                            column.metric(name.upper(), f"{value:.3f}")
-                st.info(prediction.get("warning", "Validate predictions before real-world use."))
-                with st.expander("Prediction details"):
-                    st.json(prediction)
-        except Exception as error:
-            st.error(f"Prediction failed: {error}")
-            st.caption("Check the model file and the synthetic data/prediction_input.example.json feature names.")
+# Yield prediction (separate module)
+render_yield_prediction(BASE_DIR)
 
 st.divider()
 st.caption(
     "Academic prototype. NDVI zones are screening indicators; fertilizer emissions may be partial estimates; "
     "yield predictions need validation. Existing satellite imagery is not automatically matched to a selected farm."
 )
+
+# ==============================
+# SMART FARM HEALTH & ACTION PLAN
+# ==============================
+
+import numpy as np
+
+st.markdown("---")
+st.markdown('<div id="cn-action-plan"></div>', unsafe_allow_html=True)
+st.header("🌿 Smart Farm Health & Action Plan")
+st.caption(
+    "A vegetation screening indicator and practical next steps based on the "
+    "available satellite data. This is not a crop diagnosis."
+)
+
+ndvi_candidates = [
+    OUTPUT_DIR / "nawada_ndvi.tif",
+    OUTPUT_DIR / "ndvi.tif",
+]
+ndvi_file = next((file for file in ndvi_candidates if file.exists()), None)
+
+mean_ndvi = None
+low_vegetation = None
+data_note = ""
+
+if ndvi_file:
+    try:
+        import rasterio
+
+        with rasterio.open(ndvi_file) as src:
+            ndvi_data = src.read(1, masked=True).astype("float32")
+            valid = np.asarray(ndvi_data.compressed())
+            valid = valid[np.isfinite(valid)]
+
+        if valid.size:
+            mean_ndvi = float(np.mean(valid))
+            low_vegetation = float(np.mean(valid < 0.30) * 100)
+        else:
+            data_note = "The NDVI raster contains no valid pixels."
+    except Exception as error:
+        data_note = f"Could not read NDVI data: {type(error).__name__}"
+else:
+    data_note = "No supported NDVI raster was found in the outputs folder."
+
+if mean_ndvi is not None:
+    # Transparent, heuristic score based only on mean NDVI.
+    # It is not a validated whole-farm health score.
+    if mean_ndvi < 0.20:
+        score, category = 35, "Low vegetation greenness"
+    elif mean_ndvi < 0.30:
+        score, category = 50, "Below-moderate vegetation greenness"
+    elif mean_ndvi < 0.40:
+        score, category = 65, "Moderate vegetation greenness"
+    elif mean_ndvi < 0.50:
+        score, category = 78, "Good vegetation greenness"
+    else:
+        score, category = 88, "High vegetation greenness"
+
+    st.subheader("Farm vegetation snapshot")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Vegetation Screening Score", f"{score}/100")
+    c2.metric("Mean NDVI", f"{mean_ndvi:.3f}")
+    c3.metric("Pixels below NDVI 0.30", f"{low_vegetation:.1f}%")
+    st.progress(score / 100)
+    st.info(
+        f"**Screening result: {category}.** NDVI measures vegetation greenness, "
+        "not overall farm health. Scores are heuristic indicators, not validated diagnoses."
+    )
+
+    recommendations = []
+    if low_vegetation >= 40:
+        recommendations.append(
+            "Inspect low-NDVI zones in the field. Check crop stage, soil moisture, "
+            "weeds, pests and nutrient availability before choosing a treatment."
+        )
+    elif low_vegetation >= 20:
+        recommendations.append(
+            "Inspect lower-NDVI patches and compare them with healthier-looking "
+            "areas before deciding whether intervention is needed."
+        )
+    else:
+        recommendations.append(
+            "Vegetation greenness is relatively consistent against the selected "
+            "threshold. Continue monitoring and verify crop conditions in the field."
+        )
+
+    recommendations.append(
+        "Do not apply extra fertilizer based on NDVI alone. Use soil testing, "
+        "crop requirements and local agronomic advice."
+    )
+    recommendations.append(
+        "Review fertilizer-emissions estimates separately. They are estimates and "
+        "do not represent a complete measurement of farm carbon emissions."
+    )
+
+    st.subheader("Your farm action plan")
+    st.markdown('<div class="cn-section-intro">Practical next steps based on the current vegetation screening. Confirm findings in the field before making farm-management decisions.</div>', unsafe_allow_html=True)
+    from html import escape as html_escape
+    for number, recommendation in enumerate(recommendations, 1):
+        st.markdown(
+            f'<div class="cn-action-card">'
+            f'<div class="cn-action-number">{number:02d}</div>'
+            f'<div><div class="cn-action-title">Recommended action</div>'
+            f'<p class="cn-action-copy">{html_escape(recommendation)}</p></div></div>',
+            unsafe_allow_html=True,
+        )
+
+    # Build the PDF in memory; no report file is written to the project directory.
+    from io import BytesIO
+    from xml.sax.saxutils import escape
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_LEFT
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+
+    pdf_buffer = BytesIO()
+    pdf_doc = SimpleDocTemplate(
+        pdf_buffer,
+        pagesize=letter,
+        rightMargin=0.65 * inch,
+        leftMargin=0.65 * inch,
+        topMargin=0.65 * inch,
+        bottomMargin=0.65 * inch,
+        title="Carbon Nova AI - Farm Action Plan",
+        author="Carbon Nova AI",
+    )
+
+    pdf_styles = getSampleStyleSheet()
+    pdf_styles.add(ParagraphStyle(
+        name="CNTitle", parent=pdf_styles["Title"], fontName="Helvetica-Bold",
+        fontSize=23, leading=28, textColor=colors.HexColor("#166534"),
+        alignment=TA_LEFT, spaceAfter=6,
+    ))
+    pdf_styles.add(ParagraphStyle(
+        name="CNSubtitle", parent=pdf_styles["Normal"], fontSize=10,
+        leading=15, textColor=colors.HexColor("#64748b"), spaceAfter=18,
+    ))
+    pdf_styles.add(ParagraphStyle(
+        name="CNHeading", parent=pdf_styles["Heading2"], fontSize=14,
+        leading=18, textColor=colors.HexColor("#166534"),
+        spaceBefore=14, spaceAfter=8,
+    ))
+    pdf_styles.add(ParagraphStyle(
+        name="CNBody", parent=pdf_styles["BodyText"], fontSize=10,
+        leading=15, spaceAfter=8,
+    ))
+
+    story = [
+        Paragraph("CARBON NOVA AI", pdf_styles["CNTitle"]),
+        Paragraph("Farm Health Screening &amp; Action Plan", pdf_styles["CNSubtitle"]),
+    ]
+    metrics_table = Table(
+        [
+            ["SCREENING SCORE", "MEAN NDVI", "LOW-NDVI PIXELS"],
+            [f"{score}/100", f"{mean_ndvi:.3f}", f"{low_vegetation:.1f}%"],
+        ],
+        colWidths=[2.2 * inch] * 3,
+    )
+    metrics_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#14532d")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#f0fdf4")),
+        ("TEXTCOLOR", (0, 1), (-1, 1), colors.HexColor("#166534")),
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+        ("FONTSIZE", (0, 0), (-1, 0), 8),
+        ("FONTSIZE", (0, 1), (-1, 1), 16),
+        ("TOPPADDING", (0, 0), (-1, -1), 12),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#d1fae5")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+    story.extend([
+        metrics_table,
+        Spacer(1, 14),
+        Paragraph("Screening Assessment", pdf_styles["CNHeading"]),
+        Paragraph(escape(category), pdf_styles["CNBody"]),
+        Paragraph("Recommended Actions", pdf_styles["CNHeading"]),
+    ])
+    for number, recommendation in enumerate(recommendations, 1):
+        story.append(Paragraph(
+            f"<b>{number}.</b> {escape(recommendation)}",
+            pdf_styles["CNBody"],
+        ))
+    story.extend([
+        Spacer(1, 10),
+        Paragraph("Limitations", pdf_styles["CNHeading"]),
+        Paragraph(
+            "This heuristic screening score uses mean NDVI only. NDVI indicates "
+            "vegetation greenness and does not diagnose crop health or measure total "
+            "farm sustainability. Verify findings with field inspection and appropriate "
+            "agricultural measurements. Emissions estimates may not cover every source.",
+            pdf_styles["CNBody"],
+        ),
+        Spacer(1, 12),
+        Paragraph("Generated by Carbon Nova AI | Agricultural intelligence prototype",
+                  pdf_styles["Italic"]),
+    ])
+    pdf_doc.build(story)
+    pdf_bytes = pdf_buffer.getvalue()
+
+    st.download_button(
+        "⬇️ Download Farm Action Plan (PDF)",
+        data=pdf_bytes,
+        file_name="Carbon_Nova_Farm_Action_Plan.pdf",
+        mime="application/pdf",
+        use_container_width=True,
+    )
+else:
+    st.warning(data_note)
+    st.caption(
+        "Place your NDVI raster at outputs/ndvi.tif or "
+        "outputs/nawada_ndvi.tif, then refresh the dashboard."
+    )
